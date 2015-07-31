@@ -102,25 +102,44 @@
 
             $scope.view.calculation = {};
 
-            $scope.view.operators = ['+', '-'];
+            $scope.operators = {
+                add: true,
+                sub: true,
+                multi: true,
+                divis: true
+            };
 
             $scope.genRandomCalcation = function () {
-                $scope.view.calculation = Random.Calculation(numbers, $scope.view.operators);
+                $scope.view.calculation = Random.Calculation(numbers, $scope.operators);
             };
 
             $scope.run = function () {
-                if (!isGameRunning) {
-                    isGameRunning = true;
-                    interval = setInterval(function () {
-                        $scope.$applyAsync(function () {
-                            var color = Random.BackgroundColor();
-                            $('body').css('background-color', color);
-                        })
-                    }, 100);
-                } else {
-                    clearInterval(interval);
-                    isGameRunning = false;
-                }
+                var operators = [];
+
+                var alias = {
+                    add: '+',
+                    sub: '-',
+                    multi: 'x',
+                    divis: ':'
+                };
+
+                angular.forEach($scope.operators, function (value, key) {
+                    value ? operators.push(alias[key]) : '';
+                });
+
+                console.log(operators);
+                //if (!isGameRunning) {
+                //    isGameRunning = true;
+                //    interval = setInterval(function () {
+                //        $scope.$applyAsync(function () {
+                //            var color = Random.BackgroundColor();
+                //            $('body').css('background-color', color);
+                //        })
+                //    }, 100);
+                //} else {
+                //    clearInterval(interval);
+                //    isGameRunning = false;
+                //}
             };
         })
         .directive('formular', function () {
@@ -130,7 +149,7 @@
                     calculation: "="
                 },
                 template: '<p>{{view.a}} {{view.operator}} {{view.b}}</p>'
-                + '<p>{{view.result}}</p>',
+                            + '<p>= {{view.result}}</p>',
                 link: function ($scope, elem, attrs) {
                     $scope.view = {};
                     $scope.$watch('calculation', function (calculation) {
