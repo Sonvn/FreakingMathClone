@@ -4,7 +4,7 @@
 (function () {
 
     angular.module('freaking.math', [])
-        
+
         .factory('Random', function () {
             var true_false = [true, false, false, true];
 
@@ -92,10 +92,30 @@
                 }
                 return _array;
             };
+            var parseOperators = function () {
+                var operators = [];
+                var alias = {
+                    add: '+',
+                    sub: '-',
+                    multi: 'x',
+                    divis: ':'
+                };
+                angular.forEach($scope.operators, function (value, key) {
+                    value ? operators.push(alias[key]) : '';
+                });
+                return operators;
+            };
+
+            var checkAnswer = function (answer, result, callback) {
+                var mess = answer == result ? true : false;
+                callback(mess);
+            };
 
             var interval;
             var isGameRunning = false;
             var limitRangeNumber = 20;
+            $scope.score = 0;
+            $scope.bestScore = 0;
             var numbers = createNumberArray(limitRangeNumber);
 
             $scope.view = {};
@@ -109,25 +129,45 @@
                 divis: true
             };
 
-            $scope.genRandomCalcation = function () {
-                $scope.view.calculation = Random.Calculation(numbers, $scope.operators);
+            $scope.$watch('operators', function (operators) {
+                var operators = parseOperators();
+                if (operators.length > 0) {
+                    $scope.genRandomCalculation(numbers, operators);
+                }
+            }, true);
+
+            $scope.genRandomCalculation = function (numbers, operators) {
+                $scope.view.calculation = Random.Calculation(numbers, operators);
             };
 
-            $scope.run = function () {
-                var operators = [];
-
-                var alias = {
-                    add: '+',
-                    sub: '-',
-                    multi: 'x',
-                    divis: ':'
+            $scope.init = function () {
+                $scope.score = 0;
+                isGameRunning = false;
+                $scope.operators = {
+                    add: true,
+                    sub: true,
+                    multi: true,
+                    divis: true
                 };
+            };
 
-                angular.forEach($scope.operators, function (value, key) {
-                    value ? operators.push(alias[key]) : '';
+            $scope.run = function (answer) {
+
+                checkAnswer(answer, $scope.view.calculation.show, function (result) {
+                    $('#resultText').html(result?'true':'false');
+                    console.log(result);
                 });
 
-                console.log(operators);
+                var operators = parseOperators();
+                if (operators.length > 0) {
+                    $scope.genRandomCalculation(numbers, operators);
+                }
+
+                //$scope.$applyAsync(function () {
+                //    var color = Random.BackgroundColor();
+                //    $('body').css('background-color', color);
+                //});
+
                 //if (!isGameRunning) {
                 //    isGameRunning = true;
                 //    interval = setInterval(function () {
@@ -149,7 +189,7 @@
                     calculation: "="
                 },
                 template: '<p>{{view.a}} {{view.operator}} {{view.b}}</p>'
-                            + '<p>= {{view.result}}</p>',
+                + '<p>= {{view.result}}</p>',
                 link: function ($scope, elem, attrs) {
                     $scope.view = {};
                     $scope.$watch('calculation', function (calculation) {
@@ -161,8 +201,38 @@
                 }
             }
         })
+        .directive('ngLeft', function () {
+            return {
+                restrict: 'A',
+                link: function ($scope, elem, attrs) {
+                    jQuery(document).on('keydown', function(event){
+                        if(event.keyCode === 37) {
+                            $scope.$apply(function (){
+                                $scope.$eval(attrs.ngLeft);
+                            });
 
+                            event.preventDefault();
+                        }
+                    });
+                }
+            }
+        })
+        .directive('ngRight', function () {
+            return {
+                restrict: 'A',
+                link: function ($scope, elem, attrs) {
+                    jQuery(document).on('keydown', function(event){
+                        if(event.keyCode === 39) {
+                            $scope.$apply(function (){
+                                $scope.$eval(attrs.ngRight);
+                            });
+
+                            event.preventDefault();
+                        }
+                    });
+                }
+            }
+        })
     ;
 
-})
-();
+})();
