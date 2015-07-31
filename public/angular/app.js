@@ -4,8 +4,87 @@
 (function () {
 
     angular.module('freaking.math', [])
+        
+        .factory('Random', function () {
+            var true_false = [true, false, false, true];
 
-        .controller("freaking.math.ctrl", function ($scope) {
+            var randomItemInArray = function (array) {
+                var i = Math.floor(Math.random() * array.length);
+                return array[i];
+            };
+
+            var randomNumber = function (numbers, options) {
+                var number = randomItemInArray(numbers);
+                if (options) {
+                    if (options['smaller'] >= 0) {
+                        while (options['smaller'] < number) {
+                            number = randomItemInArray(numbers);
+                        }
+                        return number;
+                    }
+                    if (options['bigger']) {
+                        while (options['bigger'] > number) {
+                            number = randomItemInArray(numbers);
+                        }
+                        return number;
+                    }
+                    if (options['division']) {
+                        do {
+                            number = randomItemInArray(numbers);
+                        } while (options['division'] % number != 0 || options['division'] < number || number == 0);
+                        return number;
+                    }
+                } else {
+                    return number;
+                }
+            };
+
+            var randomBackgroundColor = function () {
+                var background_color = ["#16a085", "#27ae60", "#8e44ad", "#f39c12", "#d35400", "#7f8c8d"];
+                return randomItemInArray(background_color);
+            };
+
+            var randomCalculation = function (numbers, inputOperators) {
+                var operators = inputOperators || ['+', '-', 'x', ':'];
+
+                var _object = {};
+
+                var _operator = randomItemInArray(operators);
+                _object.operator = _operator;
+
+                if (_operator == operators[0]) {
+                    _object.a = randomNumber(numbers);
+                    _object.b = randomNumber(numbers);
+                    _object.result_true = _object.a + _object.b;
+                    _object.result_false = randomItemInArray(numbers);
+                } else if (_operator == operators[1]) {
+                    _object.a = randomNumber(numbers);
+                    _object.b = randomNumber(numbers, {smaller: _object.a});
+                    _object.result_true = _object.a - _object.b;
+                    _object.result_false = randomItemInArray(numbers);
+                } else if (_operator == operators[2]) {
+                    _object.a = randomNumber(numbers, {smaller: 9});
+                    _object.b = randomNumber(numbers, {smaller: 9});
+                    _object.result_true = _object.a * _object.b;
+                    _object.result_false = randomItemInArray(numbers);
+                } else if (_operator == operators[3]) {
+                    _object.a = randomNumber(numbers);
+                    _object.b = randomNumber(numbers, {'division': _object.a});
+                    _object.result_true = _object.a / _object.b;
+                    _object.result_false = randomItemInArray(numbers);
+                }
+                _object.show = randomItemInArray(true_false);
+                return _object;
+            };
+            return {
+                ItemInArray: randomItemInArray,
+                Number: randomNumber,
+                BackgroundColor: randomBackgroundColor,
+                Calculation: randomCalculation
+            }
+        })
+
+        .controller("freaking.math.ctrl", function ($scope, Random) {
             var createNumberArray = function (number) {
                 var _array = [];
                 for (var i = 0; i < number; i++) {
@@ -17,40 +96,16 @@
             var interval;
             var isGameRunning = false;
             var limitRangeNumber = 20;
-            var true_false = [true, false];
-            var numbers = createNumberArray(20);
-            var operators = ['+', '-'];
+            var numbers = createNumberArray(limitRangeNumber);
+
             $scope.view = {};
-
-
-            var randomItemInArray = function (array) {
-                var i = Math.floor(Math.random() * array.length);
-                return array[i];
-            };
-
-            var random_background_color = function () {
-                var background_color = ["#16a085", "#27ae60", "#8e44ad", "#f39c12", "#d35400", "#7f8c8d"];
-                return randomItemInArray(background_color);
-            };
-
-            var random_calculation = function () {
-                var _object = {
-                    a: randomItemInArray(numbers),
-                    b: randomItemInArray(numbers)
-                };
-                var _operator = randomItemInArray(operators);
-                _object.result_true = _operator == operators[0] ? _object.a + _object.b : _object.a - _object.b;
-                _object.result_false = randomItemInArray(numbers);
-                _object.show = randomItemInArray(true_false);
-                _object.operator = _operator;
-                return _object;
-            };
 
             $scope.view.calculation = {};
 
+            $scope.view.operators = ['+', '-'];
+
             $scope.genRandomCalcation = function () {
-                $scope.view.calculation = random_calculation();
-                console.log($scope.view.calculation);
+                $scope.view.calculation = Random.Calculation(numbers, $scope.view.operators);
             };
 
             $scope.run = function () {
@@ -58,7 +113,7 @@
                     isGameRunning = true;
                     interval = setInterval(function () {
                         $scope.$applyAsync(function () {
-                            var color = random_background_color();
+                            var color = Random.BackgroundColor();
                             $('body').css('background-color', color);
                         })
                     }, 100);
@@ -75,7 +130,7 @@
                     calculation: "="
                 },
                 template: '<p>{{view.a}} {{view.operator}} {{view.b}}</p>'
-                        + '<p>{{view.result}}</p>',
+                + '<p>{{view.result}}</p>',
                 link: function ($scope, elem, attrs) {
                     $scope.view = {};
                     $scope.$watch('calculation', function (calculation) {
@@ -90,4 +145,5 @@
 
     ;
 
-})();
+})
+();
