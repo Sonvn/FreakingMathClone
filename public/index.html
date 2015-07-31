@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="freaking.math" ng-controller="freaking.math.ctrl">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="./libs/css/style.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.13/angular-ui-router.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="./angular/app.js"></script>
+</head>
+<body>
+<div>
+    <div>
+        <!--math:{{fomula}}-->
+    </div>
+    <a class="btn btn-success" ng-click="genRandomCalcation()">genRandomCalcation</a>
+    <formular calculation="view.calculation"></formular>
+    <button><i class="fa fa-check"></i></button>
+    <button><i class="fa fa-times"></i></button>
+</div>
+</body>
+</html>
