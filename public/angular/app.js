@@ -201,37 +201,17 @@
                 }
             }
         })
-        .directive('ngLeft', function () {
+        .directive("onKeypress", function() {
             return {
-                restrict: 'A',
-                link: function ($scope, elem, attrs) {
-                    jQuery(document).on('keydown', function(event){
-                        if(event.keyCode === 37) {
-                            $scope.$apply(function (){
-                                $scope.$eval(attrs.ngLeft);
-                            });
-
-                            event.preventDefault();
-                        }
-                    });
+                restrict: "A",
+                link: function($scope, elem, attrs) {
+                    elem.keydown(function(keyevent) {
+                        $scope.$applyAsync(function() {
+                            $scope.$eval( attrs.onKeypress, {keycode: keyevent.keyCode });
+                        });
+                    })
                 }
-            }
-        })
-        .directive('ngRight', function () {
-            return {
-                restrict: 'A',
-                link: function ($scope, elem, attrs) {
-                    jQuery(document).on('keydown', function(event){
-                        if(event.keyCode === 39) {
-                            $scope.$apply(function (){
-                                $scope.$eval(attrs.ngRight);
-                            });
-
-                            event.preventDefault();
-                        }
-                    });
-                }
-            }
+            };
         })
     ;
 
