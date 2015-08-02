@@ -131,6 +131,7 @@
             };
 
             var interval;
+            var debug = true;
             $scope.game = {
                 running: false,
                 end: false
@@ -174,7 +175,6 @@
                 };
             };
 
-
             $scope.endGame = function () {
                 $scope.game.running = false;
                 $scope.game.end = true;
@@ -184,6 +184,11 @@
 
             $scope.run = function (answer) {
                 !$scope.game.running && !$scope.game.end ? $scope.game.running = true : '';
+
+                if(debug) {
+                    $scope.game.running = true;
+                    $scope.game.end = true;
+                }
 
                 if ($scope.game.running) {
                     checkAnswer(answer, $scope.view.calculation.show).then(
