@@ -13,19 +13,20 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="./angular/app.js"></script>
 </head>
-<body>
+<body on-keypress="(keycode == 37 || keycode==39) && run(keycode==37)">
 <div submit-answer>
     <div>
         <p id="resultText"></p>
         {{which}}
     </div>
     <formular calculation="view.calculation"></formular>
-    <button ng-click="run(true)" ng-left="run(true)"><i class="fa fa-check"></i></button>
-    <button ng-click="run(false)" ng-right="run(false)"><i class="fa fa-times"></i></button>
+    <button ng-click="run(true)"><i class="fa fa-check"></i></button>
+    <button ng-click="run(false)"><i class="fa fa-times"></i></button>
     <button ng-click="init()">init</button>
     <input id="Addition" type="checkbox" ng-model="operators.add"/><label for="Addition">Addition</label>
     <input id="Subtraction" type="checkbox" ng-model="operators.sub"/><label for="Subtraction">Subtraction</label>
-    <input id="Multiplication" type="checkbox" ng-model="operators.multi"/><label for="Multiplication">Multiplication</label>
+    <input id="Multiplication" type="checkbox" ng-model="operators.multi"/><label
+        for="Multiplication">Multiplication</label>
     <input id="Division" type="checkbox" ng-model="operators.divis"/><label for="Division">Division</label>
 </div>
 </body>

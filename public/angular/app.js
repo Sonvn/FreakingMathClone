@@ -14,28 +14,21 @@
             };
 
             var randomNumber = function (numbers, options) {
-                var number = randomItemInArray(numbers);
                 if (options) {
-                    if (options['smaller'] >= 0) {
-                        while (options['smaller'] < number) {
-                            number = randomItemInArray(numbers);
+                    var number = 0;
+                    var flag = true;
+                    do {
+                        number = randomItemInArray(numbers);
+                        console.log(options);
+                        for (var key in options) {
+                            console.log(key);
+                            options[key](number) ? flag = true : flag = false;
                         }
-                        return number;
-                    }
-                    if (options['bigger']) {
-                        while (options['bigger'] > number) {
-                            number = randomItemInArray(numbers);
-                        }
-                        return number;
-                    }
-                    if (options['division']) {
-                        do {
-                            number = randomItemInArray(numbers);
-                        } while (options['division'] % number != 0 || options['division'] < number || number == 0);
-                        return number;
-                    }
-                } else {
+                    } while (flag == false);
+
                     return number;
+                } else {
+                    return randomItemInArray(numbers);
                 }
             };
 
@@ -59,17 +52,25 @@
                     _object.result_false = randomItemInArray(numbers);
                 } else if (_operator == operators[1]) {
                     _object.a = randomNumber(numbers);
-                    _object.b = randomNumber(numbers, {smaller: _object.a});
+                    _object.b = randomNumber(numbers, {smaller: function (number) {
+                        return number <= _object.a;
+                    }});
                     _object.result_true = _object.a - _object.b;
                     _object.result_false = randomItemInArray(numbers);
                 } else if (_operator == operators[2]) {
-                    _object.a = randomNumber(numbers, {smaller: 9});
-                    _object.b = randomNumber(numbers, {smaller: 9});
+                    _object.a = randomNumber(numbers, {smaller: function (number) {
+                        return number <= 0;
+                    }});
+                    _object.b = randomNumber(numbers, {smaller: function (number) {
+                        return number <= 9;
+                    }});
                     _object.result_true = _object.a * _object.b;
                     _object.result_false = randomItemInArray(numbers);
                 } else if (_operator == operators[3]) {
                     _object.a = randomNumber(numbers);
-                    _object.b = randomNumber(numbers, {'division': _object.a});
+                    _object.b = randomNumber(numbers, {division: function (number) {
+                        return _object.a % number == 0 && _object.a > number && number != 0;
+                    }});
                     _object.result_true = _object.a / _object.b;
                     _object.result_false = randomItemInArray(numbers);
                 }
@@ -154,7 +155,7 @@
             $scope.run = function (answer) {
 
                 checkAnswer(answer, $scope.view.calculation.show, function (result) {
-                    $('#resultText').html(result?'true':'false');
+                    $('#resultText').html(result ? 'true' : 'false');
                     console.log(result);
                 });
 
@@ -201,37 +202,17 @@
                 }
             }
         })
-        .directive('ngLeft', function () {
+        .directive("onKeypress", function () {
             return {
-                restrict: 'A',
+                restrict: "A",
                 link: function ($scope, elem, attrs) {
-                    jQuery(document).on('keydown', function(event){
-                        if(event.keyCode === 37) {
-                            $scope.$apply(function (){
-                                $scope.$eval(attrs.ngLeft);
-                            });
-
-                            event.preventDefault();
-                        }
-                    });
+                    elem.keydown(function (keyevent) {
+                        $scope.$applyAsync(function () {
+                            $scope.$eval(attrs.onKeypress, {keycode: keyevent.keyCode});
+                        });
+                    })
                 }
-            }
-        })
-        .directive('ngRight', function () {
-            return {
-                restrict: 'A',
-                link: function ($scope, elem, attrs) {
-                    jQuery(document).on('keydown', function(event){
-                        if(event.keyCode === 39) {
-                            $scope.$apply(function (){
-                                $scope.$eval(attrs.ngRight);
-                            });
-
-                            event.preventDefault();
-                        }
-                    });
-                }
-            }
+            };
         })
     ;
 
