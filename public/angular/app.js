@@ -19,9 +19,7 @@
                     var flag = true;
                     do {
                         number = randomItemInArray(numbers);
-                        console.log(options);
                         for (var key in options) {
-                            console.log(key);
                             options[key](number) ? flag = true : flag = false;
                         }
                     } while (flag == false);
@@ -38,11 +36,11 @@
             };
 
             var randomCalculation = function (numbers, inputOperators) {
-                var operators = inputOperators || ['+', '-', 'x', ':'];
+                var operators = ['+', '-', 'x', ':'];
 
                 var _object = {};
 
-                var _operator = randomItemInArray(operators);
+                var _operator = randomItemInArray(inputOperators);
                 _object.operator = _operator;
 
                 if (_operator == operators[0]) {
@@ -52,25 +50,43 @@
                     _object.result_false = randomItemInArray(numbers);
                 } else if (_operator == operators[1]) {
                     _object.a = randomNumber(numbers);
-                    _object.b = randomNumber(numbers, {smaller: function (number) {
-                        return number <= _object.a;
-                    }});
+                    _object.b = randomNumber(numbers, {
+                        smaller: function (number) {
+                            return number <= _object.a;
+                        }
+                    });
                     _object.result_true = _object.a - _object.b;
                     _object.result_false = randomItemInArray(numbers);
                 } else if (_operator == operators[2]) {
-                    _object.a = randomNumber(numbers, {smaller: function (number) {
-                        return number <= 0;
-                    }});
-                    _object.b = randomNumber(numbers, {smaller: function (number) {
-                        return number <= 9;
-                    }});
+                    _object.a = randomNumber(numbers, {
+                        bigger: function (number) {
+                            return number > 0;
+                        },
+                        smaller: function (number) {
+                            return number <= 9;
+                        }
+                    });
+                    _object.b = randomNumber(numbers, {
+                        bigger: function (number) {
+                            return number > 0;
+                        },
+                        smaller: function (number) {
+                            return number <= 9;
+                        }
+                    });
                     _object.result_true = _object.a * _object.b;
                     _object.result_false = randomItemInArray(numbers);
                 } else if (_operator == operators[3]) {
-                    _object.a = randomNumber(numbers);
-                    _object.b = randomNumber(numbers, {division: function (number) {
-                        return _object.a % number == 0 && _object.a > number && number != 0;
-                    }});
+                    _object.a = randomNumber(numbers, {
+                        bigger: function (number) {
+                            return number > 0;
+                        }
+                    });
+                    _object.b = randomNumber(numbers, {
+                        division: function (number) {
+                            return _object.a % number == 0 && _object.a > number && number > 0;
+                        }
+                    });
                     _object.result_true = _object.a / _object.b;
                     _object.result_false = randomItemInArray(numbers);
                 }
@@ -85,7 +101,7 @@
             }
         })
 
-        .controller("freaking.math.ctrl", function ($scope, Random) {
+        .controller("freaking.math.ctrl", function ($scope, $q, Random) {
             var createNumberArray = function (number) {
                 var _array = [];
                 for (var i = 0; i < number; i++) {
@@ -93,7 +109,7 @@
                 }
                 return _array;
             };
-            var parseOperators = function () {
+            var parseOperators = function (_operators) {
                 var operators = [];
                 var alias = {
                     add: '+',
@@ -101,19 +117,24 @@
                     multi: 'x',
                     divis: ':'
                 };
-                angular.forEach($scope.operators, function (value, key) {
+                angular.forEach(_operators, function (value, key) {
                     value ? operators.push(alias[key]) : '';
                 });
                 return operators;
             };
 
-            var checkAnswer = function (answer, result, callback) {
+            var checkAnswer = function (answer, result) {
+                var defer = $q.defer();
                 var mess = answer == result ? true : false;
-                callback(mess);
+                mess ? defer.resolve(mess) : defer.reject(mess);
+                return defer.promise;
             };
 
             var interval;
-            var isGameRunning = false;
+            $scope.game = {
+                running: false,
+                end: false
+            };
             var limitRangeNumber = 20;
             $scope.score = 0;
             $scope.bestScore = 0;
@@ -131,7 +152,7 @@
             };
 
             $scope.$watch('operators', function (operators) {
-                var operators = parseOperators();
+                var operators = parseOperators($scope.operators);
                 if (operators.length > 0) {
                     $scope.genRandomCalculation(numbers, operators);
                 }
@@ -143,7 +164,8 @@
 
             $scope.init = function () {
                 $scope.score = 0;
-                isGameRunning = false;
+                $scope.game.running = false;
+                $scope.game.end = false;
                 $scope.operators = {
                     add: true,
                     sub: true,
@@ -152,25 +174,35 @@
                 };
             };
 
+
+            $scope.endGame = function () {
+                $scope.game.running = false;
+                $scope.game.end = true;
+                $scope.bestScore = $scope.score > $scope.bestScore ? $scope.score : $scope.bestScore;
+                $('#resultText').html("Game Over");
+            };
+
             $scope.run = function (answer) {
+                !$scope.game.running && !$scope.game.end ? $scope.game.running = true : '';
 
-                checkAnswer(answer, $scope.view.calculation.show, function (result) {
-                    $('#resultText').html(result ? 'true' : 'false');
-                    console.log(result);
-                });
-
-                var operators = parseOperators();
-                if (operators.length > 0) {
-                    $scope.genRandomCalculation(numbers, operators);
+                if ($scope.game.running) {
+                    checkAnswer(answer, $scope.view.calculation.show).then(
+                        function (mess) {
+                            $('#resultText').html(mess ? 'true' : 'false');
+                            $scope.score++;
+                            var operators = parseOperators($scope.operators);
+                            if (operators.length > 0) {
+                                $scope.genRandomCalculation(numbers, operators);
+                            }
+                        },
+                        function (mess) {
+                            $scope.endGame();
+                        }
+                    );
                 }
 
-                //$scope.$applyAsync(function () {
-                //    var color = Random.BackgroundColor();
-                //    $('body').css('background-color', color);
-                //});
-
-                //if (!isGameRunning) {
-                //    isGameRunning = true;
+                //if (!$scope.game.running) {
+                //    $scope.game.running = true;
                 //    interval = setInterval(function () {
                 //        $scope.$applyAsync(function () {
                 //            var color = Random.BackgroundColor();
@@ -179,7 +211,7 @@
                 //    }, 100);
                 //} else {
                 //    clearInterval(interval);
-                //    isGameRunning = false;
+                //    $scope.game.running = false;
                 //}
             };
         })
@@ -190,13 +222,15 @@
                     calculation: "="
                 },
                 template: '<p>{{view.a}} {{view.operator}} {{view.b}}</p>'
-                + '<p>= {{view.result}}</p>',
+                + '<p>= {{view.result}}</p>'
+                + '<p>= {{view.result_real}}(real)</p>',
                 link: function ($scope, elem, attrs) {
                     $scope.view = {};
                     $scope.$watch('calculation', function (calculation) {
                         $scope.view.a = calculation.a;
                         $scope.view.b = calculation.b;
                         $scope.view.operator = calculation.operator;
+                        $scope.view.result_real = calculation.result_true;
                         $scope.view.result = calculation.show ? calculation.result_true : calculation.result_false;
                     })
                 }
